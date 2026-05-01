@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginUser, logoutUser, registerUser, refreshAccessToken } from "../controllers/authControllers.js";
+import { loginUser, logoutUser, registerUser, refreshAccessToken, verifyOTP, resendOTP } from "../controllers/authControllers.js";
 import { verifyJWT } from "../middlewares/verifyJWT.js";
 
 
@@ -18,5 +18,13 @@ router.route("/logout")
 
 router.route("/refresh-token")
     .post(refreshAccessToken);
+
+router.route("/verify-otp")
+    .post(verifyOTP);
+
+router.route("/resend-otp")
+    .post(resendOTP);
+
+
 
 export default router;

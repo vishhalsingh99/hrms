@@ -9,6 +9,7 @@ const User = sequelize.define("User", {
         primaryKey: true,
         autoIncrement: true
     },
+
     email: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -17,26 +18,56 @@ const User = sequelize.define("User", {
             isEmail: true
         }
     },
+
     firstName: {
         type: DataTypes.STRING,
         allowNull: false,
     },
+
     lastName: {
         type: DataTypes.STRING,
         allowNull: true,
     },
+
     password: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {len: [6, 50]}
+        validate: { len: [6, 50] }
     },
+
     role: {
         type: DataTypes.ENUM("employee", "manager", "admin"),
         allowNull: false,
         defaultValue: "employee"
     },
+
     refreshToken: {
         type: DataTypes.STRING
+    },
+
+    isEmailVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+
+    otp: {
+        type: DataTypes.STRING(6),        // 6 digit OTP
+        allowNull: true
+    },
+
+    otpExpires: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+
+    resetOtp: {
+        type: DataTypes.STRING(6),
+        allowNull: true
+    },
+
+    resetOtpExpires: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     timestamps: true,
@@ -50,16 +81,17 @@ const User = sequelize.define("User", {
         },
         beforeUpdate: async (user) => {
             if (user.changed('password') && user.password) {
-                const salt = await bcrypts.genSalt(10);
+                const salt = await bcryptjs.genSalt(10);
                 user.password = await bcryptjs.hash(user.password, salt);
             }
         }
     }
 });
 
+
 // Instance Method
 User.prototype.comparePassword = async function (candidatePassword) {
-    return await bcryptjs.compare(candidatePassword, this.password); 
+    return await bcryptjs.compare(candidatePassword, this.password);
 };
 
 // Password hide karne ke liye (Best Practice)
@@ -70,7 +102,7 @@ User.prototype.toJSON = function () {
 };
 
 
-User.prototype.generateAccessToken = function() {
+User.prototype.generateAccessToken = function () {
     return jwt.sign(
         {
             id: this.id,
@@ -84,7 +116,7 @@ User.prototype.generateAccessToken = function() {
     );
 };
 
-User.prototype.generateRefreshToken = function() {
+User.prototype.generateRefreshToken = function () {
     return jwt.sign(
         {
             id: this.id
