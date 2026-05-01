@@ -32,7 +32,7 @@ const User = sequelize.define("User", {
     password: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: { len: [6, 50] }
+        validate: { len: [6, 255] }
     },
 
     role: {
@@ -51,7 +51,7 @@ const User = sequelize.define("User", {
     },
 
     otp: {
-        type: DataTypes.STRING(6),        // 6 digit OTP
+        type: DataTypes.STRING,        // 6 digit OTP
         allowNull: true
     },
 
@@ -61,7 +61,7 @@ const User = sequelize.define("User", {
     },
 
     resetOtp: {
-        type: DataTypes.STRING(6),
+        type: DataTypes.STRING,
         allowNull: true
     },
 
@@ -98,6 +98,9 @@ User.prototype.comparePassword = async function (candidatePassword) {
 User.prototype.toJSON = function () {
     const values = { ...this.get() };
     delete values.password;
+    delete values.otp;
+    delete values.resetOtp;
+    delete values.refreshToken;
     return values;
 };
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginUser, logoutUser, registerUser, refreshAccessToken, verifyOTP, resendOTP } from "../controllers/authControllers.js";
+import { loginUser, logoutUser, registerUser, refreshAccessToken, verifyOTP, resendOTP, forgotPasswordOTPGenerator, resetPassword } from "../controllers/authControllers.js";
 import { verifyJWT } from "../middlewares/verifyJWT.js";
 
 
@@ -25,6 +25,11 @@ router.route("/verify-otp")
 router.route("/resend-otp")
     .post(resendOTP);
 
+router.route("/forgot-password")
+    .post(forgotPasswordOTPGenerator);
+
+router.route("/reset-password")
+    .post(resetPassword);
 
 
 export default router;
