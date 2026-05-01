@@ -135,6 +135,12 @@ export const resendOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email is already verified");
     }
 
+    const COOLDOWN = 3 * 60 * 1000;
+
+    if(user.otpRequestedAt && Date.now() - user.otpRequestedAt < COOLDOWN) {
+        throw new ApiError(400, "Please wait for 3 minutes before requesting another OTP");
+    }
+
     const rawOTP = generateOTP();
     const salt = await bcryptjs.genSalt(10);
     const hashedOTP = await bcryptjs.hash(rawOTP, salt);
@@ -142,6 +148,7 @@ export const resendOTP = asyncHandler(async (req, res) => {
 
     user.otp = hashedOTP;
     user.otpExpires = otpExpiry;
+    user.otpRequestedAt = Date.now();
     await user.save();
 
     await sendVerificationOTP(email, rawOTP);
@@ -290,6 +297,14 @@ export const forgotPasswordOTPGenerator = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User not found.");
     }
 
+
+
+    const COOLDOWN = 3 * 60 * 1000;
+
+    if(user.resetOtpRequestedAt && Date.now() - user.resetOtpRequestedAt < COOLDOWN) {
+        throw new ApiError(400, "Please wait for 3 minutes before requesting another OTP");
+    }
+
     const rawOTP = generateOTP();
 
     const salt = await bcryptjs.genSalt(10);
@@ -299,6 +314,7 @@ export const forgotPasswordOTPGenerator = asyncHandler(async (req, res) => {
 
     user.resetOtp = hashedOTP;
     user.resetOtpExpires = otpExpiry;
+    user.resetOtpRequestedAt = Date.now();
     await user.save();
 
     try {

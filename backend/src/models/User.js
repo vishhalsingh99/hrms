@@ -36,7 +36,7 @@ const User = sequelize.define("User", {
     },
 
     role: {
-        type: DataTypes.ENUM("employee", "manager", "admin"),
+        type: DataTypes.ENUM("employee", "manager", "admin", "superadmin"),
         allowNull: false,
         defaultValue: "employee"
     },
@@ -51,7 +51,7 @@ const User = sequelize.define("User", {
     },
 
     otp: {
-        type: DataTypes.STRING,        // 6 digit OTP
+        type: DataTypes.STRING,
         allowNull: true
     },
 
@@ -66,6 +66,14 @@ const User = sequelize.define("User", {
     },
 
     resetOtpExpires: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    otpRequestedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    resetOtpRequestedAt: {
         type: DataTypes.DATE,
         allowNull: true
     }
