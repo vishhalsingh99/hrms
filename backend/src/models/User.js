@@ -37,8 +37,8 @@ const User = sequelize.define("User", {
 
     role: {
         type: DataTypes.ENUM("employee", "manager", "admin", "superadmin"),
-        allowNull: false,
-        defaultValue: "employee"
+        allowNull: true,
+        defaultValue: "admin"
     },
 
     refreshToken: {
@@ -76,7 +76,44 @@ const User = sequelize.define("User", {
     resetOtpRequestedAt: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    companyId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'companies',
+            key: 'id'
+        }
+    },
+    tenantDbName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    phoneNumber : {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    address : {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    city: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    state: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    district: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    pincode: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
+
 }, {
     timestamps: true,
     tableName: 'users',
@@ -118,7 +155,9 @@ User.prototype.generateAccessToken = function () {
         {
             id: this.id,
             email: this.email,
-            role: this.role
+            role: this.role,
+            tenantDbName: this.tenantDbName,
+            companyId: this.companyId
         },
         process.env.ACCESS_TOKEN_SECRET,
         {

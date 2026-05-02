@@ -37,8 +37,7 @@ app.use(morgan("dev"));
 
 // Health Check (To verify if server is alive)
 app.get("/api/v1/health", (req, res) => {
-    // res.status(200).json({ success: true, message: "System is Operational" });
-    throw new Error("System is Operational");
+    res.status(200).json({ success: true, message: "System is Operational" });
 });
 
 

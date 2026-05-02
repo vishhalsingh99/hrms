@@ -5,15 +5,23 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import User from "../models/User.js";
 import { generateOTP, sendVerificationOTP, sendResetPasswordOTP } from "../utils/sendEmail.js";
-import { response } from "express";
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userId) => {
 
     try {
         const user = await User.findByPk(userId);
 
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
+
+        if ([accessToken, refreshToken].some((field) => field.trim() === "")) {
+            throw new ApiError(500, "Something went wrong while generating tokens");
+        }
 
         user.refreshToken = refreshToken;
         await user.save({ validate: false });
@@ -42,7 +50,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
         process.env.REFRESH_TOKEN_SECRET
     )
 
-    const user = await findByPk(decodedToken?.id);
+    const user = await User.findByPk(decodedToken?.id);
 
     if (!user) {
         throw new ApiError(401, "Invalid refresh token");
@@ -137,7 +145,7 @@ export const resendOTP = asyncHandler(async (req, res) => {
 
     const COOLDOWN = 3 * 60 * 1000;
 
-    if(user.otpRequestedAt && Date.now() - user.otpRequestedAt < COOLDOWN) {
+    if (user.otpRequestedAt && Date.now() - user.otpRequestedAt < COOLDOWN) {
         throw new ApiError(400, "Please wait for 3 minutes before requesting another OTP");
     }
 
@@ -162,9 +170,9 @@ export const resendOTP = asyncHandler(async (req, res) => {
 })
 
 export const registerUser = asyncHandler(async (req, res) => {
-    const { firstName, lastName, email, role, password, confirmPassword } = req.body;
+    const { firstName, lastName, email, password, confirmPassword } = req.body;
 
-    if ([firstName, email, role, password, confirmPassword].some((field) => field?.trim() === "")) {
+    if ([firstName, email, password, confirmPassword].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "First name, email, role, password and confirmPassword are required");
     }
 
@@ -191,7 +199,6 @@ export const registerUser = asyncHandler(async (req, res) => {
         firstName,
         lastName,
         email,
-        role,
         password,
         otp: hashedOTP,
         otpExpires: otpExpiry,
@@ -259,7 +266,6 @@ export const loginUser = asyncHandler(async (req, res) => {
         )
 });
 
-
 export const logoutUser = asyncHandler(async (req, res) => {
     await User.update(
         { refreshToken: null },
@@ -301,7 +307,7 @@ export const forgotPasswordOTPGenerator = asyncHandler(async (req, res) => {
 
     const COOLDOWN = 3 * 60 * 1000;
 
-    if(user.resetOtpRequestedAt && Date.now() - user.resetOtpRequestedAt < COOLDOWN) {
+    if (user.resetOtpRequestedAt && Date.now() - user.resetOtpRequestedAt < COOLDOWN) {
         throw new ApiError(400, "Please wait for 3 minutes before requesting another OTP");
     }
 
@@ -330,7 +336,6 @@ export const forgotPasswordOTPGenerator = asyncHandler(async (req, res) => {
             new ApiResponse(200, user, "OTP sent successfully.")
         )
 })
-
 
 export const resetPassword = asyncHandler(async (req, res) => {
     // resetOtp ko otp kar diya taaki frontend se match kare

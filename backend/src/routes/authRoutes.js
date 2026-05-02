@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { loginUser, logoutUser, registerUser, refreshAccessToken, verifyOTP, resendOTP, forgotPasswordOTPGenerator, resetPassword } from "../controllers/authControllers.js";
-import { verifyJWT } from "../middlewares/verifyJWT.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 
 
@@ -14,7 +14,7 @@ router.route("/login")
     .post(loginUser);
 
 router.route("/logout")
-    .post(verifyJWT, logoutUser);
+    .post(authMiddleware, logoutUser);
 
 router.route("/refresh-token")
     .post(refreshAccessToken);
